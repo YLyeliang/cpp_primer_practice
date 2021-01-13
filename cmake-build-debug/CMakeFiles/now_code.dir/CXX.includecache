@@ -6,15 +6,15 @@
 
 #IncludeRegexTransform: 
 
-/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/73_additional_class_feature.cpp
-73_head.h
-/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/73_head.h
-
-/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/73_head.h
-utility
-/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/utility
+/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter8/81_io.cpp
+fstream
+-
+iostream
+/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter8/iostream
 string
-/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/string
+/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter8/string
+sstream
+/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter8/sstream
 vector
-/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/vector
+/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter8/vector
 

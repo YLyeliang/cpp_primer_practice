@@ -82,10 +82,7 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/73_additional_class_feature.cpp">
-			<Option target="now_code"/>
-		</Unit>
-		<Unit filename="/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter7/73_head.h">
+		<Unit filename="/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter9/94.cpp">
 			<Option target="now_code"/>
 		</Unit>
 		<Unit filename="/Users/fiberhome/CLionProjects/cpp_primer_practice/CMakeLists.txt">

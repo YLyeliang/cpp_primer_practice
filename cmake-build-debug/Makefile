@@ -143,32 +143,32 @@ now_code/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/build
 .PHONY : now_code/fast
 
-chapter7/73_additional_class_feature.o: chapter7/73_additional_class_feature.cpp.o
+chapter9/94.o: chapter9/94.cpp.o
 
-.PHONY : chapter7/73_additional_class_feature.o
+.PHONY : chapter9/94.o
 
 # target to build an object file
-chapter7/73_additional_class_feature.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter7/73_additional_class_feature.cpp.o
-.PHONY : chapter7/73_additional_class_feature.cpp.o
+chapter9/94.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter9/94.cpp.o
+.PHONY : chapter9/94.cpp.o
 
-chapter7/73_additional_class_feature.i: chapter7/73_additional_class_feature.cpp.i
+chapter9/94.i: chapter9/94.cpp.i
 
-.PHONY : chapter7/73_additional_class_feature.i
+.PHONY : chapter9/94.i
 
 # target to preprocess a source file
-chapter7/73_additional_class_feature.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter7/73_additional_class_feature.cpp.i
-.PHONY : chapter7/73_additional_class_feature.cpp.i
+chapter9/94.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter9/94.cpp.i
+.PHONY : chapter9/94.cpp.i
 
-chapter7/73_additional_class_feature.s: chapter7/73_additional_class_feature.cpp.s
+chapter9/94.s: chapter9/94.cpp.s
 
-.PHONY : chapter7/73_additional_class_feature.s
+.PHONY : chapter9/94.s
 
 # target to generate assembly for a file
-chapter7/73_additional_class_feature.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter7/73_additional_class_feature.cpp.s
-.PHONY : chapter7/73_additional_class_feature.cpp.s
+chapter9/94.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter9/94.cpp.s
+.PHONY : chapter9/94.cpp.s
 
 # Help Target
 help:
@@ -179,9 +179,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... now_code"
-	@echo "... chapter7/73_additional_class_feature.o"
-	@echo "... chapter7/73_additional_class_feature.i"
-	@echo "... chapter7/73_additional_class_feature.s"
+	@echo "... chapter9/94.o"
+	@echo "... chapter9/94.i"
+	@echo "... chapter9/94.s"
 .PHONY : help
 
 

@@ -19,7 +19,7 @@ public:
 //    friend class Window_mgr;
     // only set the member function to friend.
     // clear must be declared before the Screen.
-//    friend void Window_mgr::clear(ScreenIdx);
+    friend void Window_mgr::clear(ScreenIdx);
 
     typedef std::string::size_type pos;
 
@@ -107,12 +107,12 @@ private:
     std::vector<Screen> screens{Screen(24, 80, ' ')};
 };
 
-//void Window_mgr::clear(ScreenIdx i) {
-//    // s is a reference to the screen we want to clear
-//    Screen &s = screens[i];
-//    // reset the contents of that screen to all blanks
-//    s.contents = std::string(s.height * s.width, ' ');
-//}
+void Window_mgr::clear(ScreenIdx i) {
+    // s is a reference to the screen we want to clear
+    Screen &s = screens[i];
+    // reset the contents of that screen to all blanks
+    s.contents = std::string(s.height * s.width, ' ');
+}
 
 
 #endif //NOW_CODE_73_HEAD_H
