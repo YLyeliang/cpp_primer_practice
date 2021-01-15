@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/now_code.dir/chapter10/101.cpp.o"
   "CMakeFiles/now_code.dir/chapter9/94.cpp.o"
   "now_code"
   "now_code.pdb"

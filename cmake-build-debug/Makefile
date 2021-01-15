@@ -143,6 +143,33 @@ now_code/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/build
 .PHONY : now_code/fast
 
+chapter10/101.o: chapter10/101.cpp.o
+
+.PHONY : chapter10/101.o
+
+# target to build an object file
+chapter10/101.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter10/101.cpp.o
+.PHONY : chapter10/101.cpp.o
+
+chapter10/101.i: chapter10/101.cpp.i
+
+.PHONY : chapter10/101.i
+
+# target to preprocess a source file
+chapter10/101.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter10/101.cpp.i
+.PHONY : chapter10/101.cpp.i
+
+chapter10/101.s: chapter10/101.cpp.s
+
+.PHONY : chapter10/101.s
+
+# target to generate assembly for a file
+chapter10/101.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/now_code.dir/build.make CMakeFiles/now_code.dir/chapter10/101.cpp.s
+.PHONY : chapter10/101.cpp.s
+
 chapter9/94.o: chapter9/94.cpp.o
 
 .PHONY : chapter9/94.o
@@ -179,6 +206,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... now_code"
+	@echo "... chapter10/101.o"
+	@echo "... chapter10/101.i"
+	@echo "... chapter10/101.s"
 	@echo "... chapter9/94.o"
 	@echo "... chapter9/94.i"
 	@echo "... chapter9/94.s"

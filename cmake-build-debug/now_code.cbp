@@ -82,6 +82,9 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter10/101.cpp">
+			<Option target="now_code"/>
+		</Unit>
 		<Unit filename="/Users/fiberhome/CLionProjects/cpp_primer_practice/chapter9/94.cpp">
 			<Option target="now_code"/>
 		</Unit>
