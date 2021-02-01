@@ -10,6 +10,11 @@
 #include "iostream"
 
 using namespace std;
+using namespace std::placeholders;
+
+string make_plural(size_t ctr, const string &word, const string &ending) {
+    return (ctr > 1) ? word + ending : word;
+}
 
 // predicate
 // in sort, to take binary predicates. The function we defined must in place of < operation to compare.
@@ -18,10 +23,62 @@ bool isShorter(const string &s1, const string &s2) {
 }
 
 // lambda Expression
-void biggies(vector<string> &words, vector<string>::size_type sz) {
-    elimDups(words);
-    stable_sort(words.begin(), words.end(), isShorter);
+// capture by reference:
+void biggies(vector<string> &words, vector<string>::size_type sz, ostream &os = cout, char c = ' ') {
+    elimDups(words); // put words in alphabetical order and remove duplicates
+    // sort words by size,
+    stable_sort(words.begin(), words.end(),
+                [](const string &a, const string &b) { return a.size() < b.size(); });
+    // get an iterator to the first elements whose size() >= sz.
+    auto wc = find_if(words.begin(), words.end(),
+                      [sz](const string &a) { return a.size() >= sz; });
+    // compute the number of elements with size >=sz
+    auto count = words.end() - wc;
+
+    // print words of the given size or longer, each one followed by a space
+    for_each(wc, words.end(),
+             [](const string &s) { cout << s << " "; });
+    // capture by reference sometimes necessary, example like below
+    for_each(wc, words.end(),
+             [&os, c](const string &s) { os << s << c; });
+    cout << endl;
 }
+
+// capture  by value: lambda
+void func1() {
+    size_t v1 = 42; // local variables
+    // copies v1 into the callable object named f
+    auto f = [v1] { return v1; };
+    v1 = 0;
+    auto i = f(); // j is 42; f stored a copy of v1 when we created it.
+}
+
+void func2() {
+    size_t v1 = 41;
+    // the object of f2 contains a reference to v1
+    auto f2 = [&v1] { return v1; };
+    v1 = 0;
+    auto j = f2(); // j is 0; f2 refers to v1; it doesn't store it.
+}
+
+// mutable lambda
+// by default, a lambda may not the change value of a variable that it copies by value.
+// then must follow the param list with keyword mutable
+void func3() {
+    size_t v1 = 41;
+    // f can change the value of the variables it captures
+    auto f = [v1]() mutable { return ++v1; };
+    v1 = 0;
+    auto j = f(); // j is 42
+}
+
+// While, a variable whether can be changed captured by reference only depends on it refers to const or non-const.
+
+// Binding argument
+bool check_size(const string &s, string::size_type sz) {
+    return s.size() >= sz;
+}
+
 
 int main() {
     vector<int> vec = {1, 2, 3, 4, 5, 6};
@@ -85,7 +142,53 @@ int main() {
 
     // using capture list
     string::size_type sz;
-    [sz](const string &a)
-    {return a.size()>=sz;};
+    [sz](const string &a) { return a.size() >= sz; };
+
+    // calling find_if
+    // get an iterator to the first element whose size >= sz.
+    auto wc = find_if(words.begin(), words.end(),
+                      [sz](const string &a) { return a.size() >= sz; });
+    // compute the number of elements with size >= sz.
+    auto count = words.end() - wc;
+    cout << count << " " << make_plural(count, "word", "s")
+         << "of length" << sz << "or longer" << endl;
+
+    // for_each Algorithm
+    // print words of the given size or longer, each one followed by a space
+    for_each(wc, words.end(), [](const string &s) { cout << s << " "; });
+    cout << endl;
+
+    // putting it all together
+    // see function biggies
+
+    // Lambda captures and Returns
+    // there are [], [names] [&] [=] [&,identifier_list] [=,reference_list]
+    // capture by value: see func1 above the main()
+
+    // Capture by reference: see func2
+
+    // implicit Captures:
+    wc = find_if(words.begin(), words.end(),
+                 [=](const string &s) { return s.size() >= sz; });
+
+    // specifying the return type of lambda
+    vector<int> vi = {-1, -2, -3, 1};
+    transform(vi.begin(), vi.end(), vi.begin(), [](int i) { return i < 0 ? -i : i; });
+    // when we need to define a return type, we must use a trailing return type
+    transform(vi.begin(), vi.end(), vi.begin(), [](int i) -> int { if (i < 0)return -i; else return i; });
+
+
+    // Binding Arguments
+    // general form of a call to bind is:
+    auto newCallble = bind(callable, arg_list);
+    // The arg_list may includes names of form _n, where n is an integer.
+    // They stand 'in place of' the arguments that will be passed to newCallable.
+    // Binding the sz param of check_size
+
+    auto check6 = bind(check_size, _1, 6);
+
+    // using placeholder Names
+
+
 
 }
