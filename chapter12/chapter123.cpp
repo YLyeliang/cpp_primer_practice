@@ -42,7 +42,9 @@ void runQueries(ifstream &infile) {
         if (!(cin >> s) || s == "q") break;
         // run the query and print the results
         print(cout, tq.query(s)) << endl;
+
     }
+
 
 }
 
