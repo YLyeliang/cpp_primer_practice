@@ -8,6 +8,7 @@
 
 #include "string"
 #include "memory"
+#include "utility"
 
 using namespace std;
 
@@ -28,6 +29,8 @@ public:
     StrVec() :   // the allocator members is default initialized
             elements(nullptr), first_free(nullptr), cap(nullptr) {}
 
+    StrVec(StrVec &&) noexcept;  // move constructor
+    StrVec &operator=(StrVec &&);   // move assignment
     StrVec(const StrVec &);  // copy constructor
     StrVec &operator=(const StrVec &);   // copy assignment
     ~StrVec();  // destructor
@@ -90,7 +93,76 @@ void StrVec::free() {
 StrVec::StrVec(const StrVec &s) {
     // call alloc_n_copy to allocate exactly as many elements as in s
     auto newdata = alloc_n_copy(s.begin(), s.end());
-    elements=newdata.fir
+    elements = newdata.first;
+    first_free = cap = newdata.second;
 }
+
+// The destructor calls free
+StrVec::~StrVec() { free(); }
+
+// copy-assignment operator
+StrVec &Strvec::operator=(const StrVec &rhs) {
+    // call alloc_n_copy to allocate exactly as many elements as in the rhs
+    auto data = alloc_n_copy(rhs.begin(), rhs.end());
+    free();
+    // like the copy constructor
+    elements = data.first;
+    first_free = cap = data.second;
+    return *this;
+}
+
+// Moving, not copying, elements during reallocation
+
+// before we write the reallocate member,  we should think a bit about what it must do.
+// 1. Allocate for a new, larger array of strings
+// 2. Construct the first part of that space to hold the existing elements
+// 3. Destroy the elements in the existing memory and deallocate that memory
+
+// move constructor, std::move
+
+// The reallocate Member
+// we'll start by calling allocate to allocate new space. We'll double the capacity of the StrVec each time we reallocate
+void StrVec::reallocate() {
+    // we'll allocate space for twice as many elements as current size
+    auto newcapacity = size() ? 2 * size() : 1;
+    // allocate new memory
+    auto newdata = alloc.allocate(newcapacity);
+    // move the data from the old memory to the new
+    auto dest = newdata;    // points to the next free position in the new array
+    auto elem = elements;   // points to the next element in the old array
+    for (size_t i = 0; i != size(); i++)
+        alloc.construct(dest++, std::move(*elem++));
+    free(); // free the old space once we've moved the elements
+    // update our data structure to points to the new elements
+    elements = newdata;
+    first_free = dest;
+    cap = elements + newcapacity;
+}
+
+// move
+StrVec::StrVec(StrVec &&s) noexcept // move won't throw any exceptions
+// member initializes take over the resources in s
+        : elements(s.elements), first_free(s.first_free), cap(s.cap) {
+    // after move, the s will be destoryed
+    // leave s in a state in which it's safe to run destructor
+    s.elements = s.first_free = s.cap = nullptr;
+}
+
+// Move operations, Library Containers, and Exceptions
+
+// move assignment
+StrVec &StrVec::operator=(StrVec &&rhs) noexcept {
+    // direct test for self-assignment
+    if (this != &rhs) {
+        free(); // free existing elements
+        elements = rhs.elements;    // take over the resources from rhs
+        first_free = rhs.first_free;
+        cap = rhs.cap;
+        // leave rhs in a destructible state
+        rhs.elements = rhs.cap = rhs.first_free = nullptr;
+    }
+    return *this;
+}
+// warning: after a move operation, the "moved-from" object must remain a valid, destructible objet
 
 #endif //NOW_CODE_135_H
