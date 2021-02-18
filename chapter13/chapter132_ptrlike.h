@@ -12,6 +12,15 @@ using namespace std;
 
 class HasPtr {
 public:
+    // add move constructor
+    HasPtr(HasPtr &&p) noexcept: ps(p.ps), i(p.i), { p.ps = 0; }
+
+    // assignment operator is both the move- and copy-assignment operator
+    HasPtr &operator=(HasPtr rhs) {
+        swap(*this, rhs);
+        return *this;
+    }
+
     // constructor allocate a new string and a new counter, which it set to 1
     HasPtr(const string &s = string()) :
             ps(new string(s)), i(0), use(new size_t(1)) {}

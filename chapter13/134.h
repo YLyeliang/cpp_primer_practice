@@ -100,5 +100,14 @@ Message &Message::operator=(const Message &rhs) {
 
 // a swap function for Message
 
+// move operation, see 136
+void Message::move_Folders(Message *m) {
+    folders = std::move(m->folders);    // use set move assignment
+    for (auto f:folders) {
+        f->remMsg(m);   // remove old message from the folder
+        f->addMsg(this);    // add this message to that folder
+    }
+    m->folders.clear(); // ensure that destroying m is harmless
+}
 
 #endif //NOW_CODE_134_H

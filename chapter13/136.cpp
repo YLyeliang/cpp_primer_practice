@@ -5,8 +5,19 @@
 #include "string"
 #include "iostream"
 #include "utility"
+#include "135.h"
 
 using namespace std;
+
+class Foo {
+public:
+    Foo() = default;
+
+    Foo(const Foo &); // copy constructor
+    // other members, but Foo does not define a move constructor
+};
+
+
 
 // Moving objects
 
@@ -43,6 +54,34 @@ int main() {
 
     // The Synthesized Move operations
     // see 136.h
+
+    // Rvalues are moved, Lvalues are copied...
+    StrVec v1, v2;
+    v1 = v2; // v2 is an lvalue; copy assignment
+    StrVec getVec(istream &);    // getVec returns an rvalue
+    v2 = getVec(cin);   // getVec(cin) is an rvalue; move assignment
+
+    // ... But rvalues are copied if there is no move constructor
+    // defined Foo()
+    Foo x;
+    Foo y(x);   // copy constructor; x is an lvalue
+    Foo z(std::move(x));    // copy constructor, because there is no move constructor
+    // The call to move(x) returns a Foo&& bound to x, we can convert a Foo&& to a const Foo&. Thus, copy are used.
+
+    // Copy-and-Swap Assignment operators and Move
+    // The class in 132_ptrlike.h is a good illustration of the interaction between function matching and move operations
+    // add a move constructor to this class, it will effectively get a move assignment operator as well
+
+    // Move operations for the Message class
+    // see 134.h
+
+    // Move Iterators
+    // make_move_iterator: takes an iterator and returns a move iterator
+
+    // 136.3 Rvalue references and member functions
+    // assuming X is the element type
+    void push_back(const X &);  // copy: binds to any kind of X
+    void push_back(X &&);   // move: binds only to modifiable rvalues fof type X
 
 
 
