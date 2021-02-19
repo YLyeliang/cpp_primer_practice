@@ -11,12 +11,17 @@ using namespace std;
 
 class Foo {
 public:
+    Foo &operator=(const Foo &) &;   // may assign only to modifiable lvalues
     Foo() = default;
 
     Foo(const Foo &); // copy constructor
     // other members, but Foo does not define a move constructor
 };
 
+Foo &Foo::operator=(const Foo &rhs) &{
+    // do whatever is needed to assign rhs to this object
+    return *this;
+}
 
 
 // Moving objects
@@ -83,6 +88,17 @@ int main() {
     void push_back(const X &);  // copy: binds to any kind of X
     void push_back(X &&);   // move: binds only to modifiable rvalues fof type X
 
+    // Overloaded functions that distinguish between moving and copying a parameter typically have one version that
+    // take a const T& and one that takes a T&&
+    // see 135.h
+
+    // Rvalue and Lvalue reference member functions
+    // Ordinarily, we can call a member function on an object, regardless l- rvalue.
+    string s1 = "a", s2 = "b";
+    auto n = (s1 + s2).find('a');
+    // see Foo()
+
+    // Overloading and Reference Functions
 
 
 }

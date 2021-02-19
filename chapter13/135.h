@@ -26,6 +26,12 @@ using namespace std;
 // simplified implementation of the memory allocation strategy for a vector-like class
 class StrVec {
 public:
+    std::string &operator[](std::size_t n) { return elements[n]; }
+
+    const std::string &operator[](std::size_t n) const { return elements[n]; }
+
+    StrVec &operator=(std::initializer_list<std::string>);  // see 144
+
     StrVec() :   // the allocator members is default initialized
             elements(nullptr), first_free(nullptr), cap(nullptr) {}
 
@@ -35,6 +41,7 @@ public:
     StrVec &operator=(const StrVec &);   // copy assignment
     ~StrVec();  // destructor
     void push_back(const string &);  // copy the element
+    void push_back(string &&);  // move the element 136
     size_t size() const { return first_free - elements; }
 
     size_t capacity() const { return cap - elements; }
@@ -51,7 +58,7 @@ private:
     void chk_n_alloc() { if (size() == capacity()) reallocate(); }
 
     // utilities used by the copy constructor, assignment operator, and destructor
-    std::pair<strin *, string *> alloc_n_copy
+    std::pair<string *, string *> alloc_n_copy
             (const string *, const string *);
 
     void free();    // destroy the elements and free the space
@@ -67,6 +74,11 @@ void StrVec::push_back(const string &s) {
     chk_n_alloc();  // ensure that there is room for another element
     // construct a copy of s in the element to which first_free points
     alloc.construct(first_free++, s);
+}
+
+void StrVec::push_back(string &&s) {
+    chk_n_alloc();  // reallocates the StrVec if necessary
+    alloc.construct(first_free++, std::move(s));
 }
 
 // The alloc_n_copy Member
@@ -164,5 +176,15 @@ StrVec &StrVec::operator=(StrVec &&rhs) noexcept {
     return *this;
 }
 // warning: after a move operation, the "moved-from" object must remain a valid, destructible objet
+
+// 144 Assignment Operator
+StrVec &StrVec::operator=(initializer_list<string> il) {
+    // alloc_n_copy allocates space and copies elements from given range
+    auto data = alloc_n_copy(il.begin(), il.end());
+    free(); // destroy the elements in this object and free the space
+    elements = data.first;    // update data members to point to the new space
+    first_free = cap = data.second;
+    return *this
+}
 
 #endif //NOW_CODE_135_H
