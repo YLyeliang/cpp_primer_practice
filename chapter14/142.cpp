@@ -100,4 +100,9 @@ int main() {
     // other that is a const member and returns a reference to const
     // As a example, see StrVec in 135.h
 
+    // 146 Increment and Decrement Operators
+    // these operators change the state of the object on which they operate, our preference is to make them members.
+    // define increment or decrement operators should define both the prefix and postfix versions
+    // see StrBlobPtr class in chapter12/StrBlobptr.h
+
 }
