@@ -16,6 +16,17 @@ using namespace std;
 // curr, which is the index of the element that the object currently denotes.
 class StrBlobPtr {
 public:
+
+    std::string &operator*() const {
+        auto p = check(curr, "dereference past end");
+        return (*p)[curr];  // (*p) is the vector to which this object points
+    }
+
+    std::string &operator->() const {
+        // delegate the real work to the dereference operator
+        return &this->operator*();
+    }
+
     // increment and decrement see 14.6 in chapter14/142.cpp
     StrBlobPtr &operator++();   // prefix operators
     StrBlobPtr &operator--();
@@ -25,6 +36,9 @@ public:
 
 
     StrBlobPtr() : curr(0) {}
+
+    // tmp
+    StrBlobPtr(std::initializer_list<std::string> il) : data(std::make_shared<std::vector<std::string>>(il)) {};
 
     // to use the data member of StrBlob, our class have to be a friend of StrBlob, which defined in StrBlob
 
@@ -81,6 +95,19 @@ StrBlobPtr &StrBlobPtr::operator--() {
     return *this;
 }
 
-//
+// postfix: increment/decrement the object but return the unchanged value
+StrBlobPtr &StrBlobPtr::operator++(int) {
+    // no check needed here; the call to prefix increment will do the check
+    StrBlobPtr ret = *this; // save the current state
+    ++*this;
+    return ret;
+}
+
+StrBlobPtr &StrBlobPtr::operator--(int) {
+    StrBlobPtr ret = *this;
+    --*this;
+    return ret;
+}
+
 
 #endif //NOW_CODE_STRBLOBPTR_H
