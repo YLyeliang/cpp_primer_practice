@@ -93,6 +93,19 @@ int add(int i, int j) { return i + j; }
 
 Sales_data add(const Sales_data &, const Sales_data &);
 
+class SmallInt {
+public:
+    SmallInt(int i = 0) : val(i) {
+        if (i < 0 || i > 255)
+            throw out_of_range("Bad SmallInt value");
+    }
+
+    explicit operator int() const { return val; }
+
+private:
+    size_t val;
+};
+
 int main() {
     // overloading the output operator <<
 
@@ -267,6 +280,136 @@ int main() {
     binops3.insert({"+", [](int i, int j) { return i + j; }});
 
     // 149: Overloading, Conversions and Operators
+    // A conversion operator converts a value of a class type to a value of some other type
+    // operator type() const; type represents a type
+    // As a example, define a small class see above smallInt
+    SmallInt si;
+    si = 4;   // implicitly converts 4 to SmallInt then calls SmallInt::operator=
+    si + 3;   // implicitly converts si to int followed by integer addition
+
+    // the double argument is converted to int using the built-in conversion
+    SmallInt sii = 3.14;    // Calls the SmallInt(int) constructor
+    // the SmallInt conversion operator converts sii to int
+    sii + 3.14;   // that int it converted to double using the built-int conversion
+
+    // conversion operators may not be defined to take parameters. No way to pass arguments.
+//    class SmallInt;
+//    operator int(SmallInt & );    // error: nonmember
+//    class SmallInt {
+//    public:
+//
+//        int operator int() const;   // error: cannot have a return type
+//        operator int(int = 0) const; // error: cannot have parameter list
+//        operator int *() const { return 42; }  // error: 42 is not a pointer
+//    };
+
+    // Conversion Operators can yield surprising results
+
+    // explicit Conversion Operators
+    // see class above the main()
+    // As with explicit constructor, the compiler won't use an explicit conversion operator for implicit conversions
+    SmallInt siii = 3;    // ok: the SmallInt constructor is not explicit
+    siii + 3; // error: implicit is conversion required, but operator int is explicit
+    static_cast<int>(siii) + 3;   // ok: explicitly request the conversion
+
+    // Conversion to bool
+    // when using a stream object in a condition, we use the operator bool that is defined for the IO types.
+    // For example:
+    int value;
+    while (cin >> value);
+    // above reads into value and returns cin, cin is implicitly converted by the istream operator bool conversion function
+
+    // 149.2 Avoiding Ambiguous Conversions
+
+    // Argument Matching and Mutual Conversions
+    // In the following example, we've defined two ways to obtain an A from a B: either by using B's conversion operaotr
+    // or by using the A constructor that takes a B:
+    struct B;
+    struct A {
+        A() = default;
+
+        A(const B &);    // converts B to A
+        // other members
+    };
+    struct B {
+        operator A() const; // also converts a B to an A
+        // other members
+    };
+    A f(const A &);
+    B b;
+    A a = f(b);   // error ambiguous: f(B::operator A()) or f(A::(const B&))
+    // we have to explicitly call the conversion operator or the constructor
+    A aa1 = f(b.operator A());   // ok: use B's conversion operator
+    A aa2 = f(A(b)); // ok: use A's constructor
+
+    // Ambiguities and Multiple conversions to built-in types
+    // ambiguities also occur when a class defines multiple conversions to ( or from) types that are themselves
+    // related by conversions
+    struct C {
+        C(int = 0);  // usually a bad idea to have two
+        C(double);  // conversions from arithmetic type
+        operator int() const;   // usually a bad idea to have two
+        operator double() const;    // conversion to arithmetic types
+        // other members
+    };
+    void ff2(long double);
+    C c;
+    ff2(c); // error ambiguous: f(C::operator int()) or f(C::operator double())
+    long lg;
+    C c2(lg);   // error ambiguous: C::C(int) or C::C(double)
+
+    // Overloaded Functions and Converting Constructors
+    // ambiguities are easy to generate if a class defines both conversion operators and overloaded operators
+    // Helpful rules of thumb:
+    // 1. Don't define mutually converting classes- if class Foo has a constructor that takes an object of class Bar,
+    // do not give Bar a conversion operator to type Foo
+    // 2. Avoid conversion to the built-in arithmetic types.
+    struct D {
+        D(int);
+        // other
+    };
+    struct E {
+        E(int);
+        // other
+    };
+    void manip(const D &);
+    void manip(const E &);
+    manip(10);  // error ambiguous: manip(D(10)) or mapnip(E(10))
+    // D and E both have constructors that take an int. Hence, the call is ambiguous.
+    // to disambiguate:
+    manip(D(10));
+
+    // Overloaded Functions and User-defined conversion
+    //
+    struct F {
+        F(double);
+        // other
+    };
+    void manip2(const D &);
+    void manip2(const F &);
+    // error ambiguous: two different user-defined conversions could be used
+    manip2(10);
+    // D has a conversion from int, F has a conversion from double. Both manip2 are viable
+
+    // 149.3 Function matching and overloaded operators
+    // overloaded operators are overloaded functions
+    class SmallInt {
+        friend SmallInt operator+(const SmallInt &, const SmallInt &);
+
+    public:
+        SmallInt(int = 0);
+
+        operator int() const { return val; }
+
+    private:
+        size_t val;
+    };
+    // below are ambiguous:
+    SmallInt s1, s2;
+    SmallInt s3 = s1 + s2;  // uses overloade operators+
+    int i = s3 + 0;   // error: ambiguous
+    // the second addition is ambiguous, because we can convert 0 to SmallInt and use the SmallInt operator+,
+    // or convert the s3 to int and use the built-in addition operators on ints.
 
 
 
