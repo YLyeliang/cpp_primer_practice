@@ -25,6 +25,18 @@ private:
     double discount = 0.0;
 };
 
+class Bulk_quote3 : public Disc_quote {
+public:
+    Bulk_quote3() = default;
+    Bulk_quote3(const string &book, double price, size_t qty, double disc) :
+            Disc_quote() {}
+
+    // overrides the base version to implement the bulk purchase discount policy
+    double net_price(size_t) const override;
+
+
+};
+
 // we can use discount_policy only through an object, pointer, or reference of type Disc_quote or of a class derived from Disc_quote:
 // see 2 in main
 
@@ -64,8 +76,8 @@ int main() {
     // the use of isbn is resolved to the isbn in Quote.
 
     // 2
-    Bulk_quote bulk2;
-    Bulk_quote *bulkP = &bulk2; // static and dynamic type are the same
+    Bulk_quote3 bulk2;
+    Bulk_quote3 *bulkP = &bulk2; // static and dynamic type are the same
     Quote *itemP = &bulk2;  // static and dynamic type are differ
     bulkP->discount_policy();   // ok : bulkP has type Bulk_Quote*
     itemP->discount_policy();   // error: itemP has type Quote*
