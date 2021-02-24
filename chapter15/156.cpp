@@ -28,6 +28,7 @@ private:
 class Bulk_quote3 : public Disc_quote {
 public:
     Bulk_quote3() = default;
+
     Bulk_quote3(const string &book, double price, size_t qty, double disc) :
             Disc_quote() {}
 
@@ -64,7 +65,51 @@ struct Derived4 : Base3 {
 };
 // If we ran the code in 3, the result of d.get_mem() would be 0.
 
+// As usual, name lookup happens before type checking
+// function declared in an inner scope do not overload functions declared in an outer scope.
+// As a result, functions defined in a derived class do not overload members defined in its base class.
+// The derived member hides the base-class member within the scope of the derived class if has the same name.
+struct Base4 {
+    int memfcn();
+};
 
+struct Derived5 : Base4 {
+    int memfcn(int);    // hides memfcn in the base
+};
+// Instance see 4
+
+// Virtual functions and scope
+// If the base and derived members took arguments that differed from one another, there would be no way to call the
+// derived version through a reference or pointer to the base class
+class Base5 {
+public:
+    virtual int fcn();
+};
+
+class D1 : public Base5 {
+public:
+    // hides fcn in the base; this fcn is not virtual
+    // D1 inherits the definition of Base5::fcn()
+    int fcn(int);   // parameter list differs from fcn in Base5
+    virtual void f2();  // new virtual function that does not exist in Base5
+};
+
+class D2 : public D1 {
+public:
+    int fcn(int);   // non-virtual function hides D1::fcn(int)
+    int fcn();  // overrides virtual fcn from Base5
+    void f2();  // overrides virtual f2 from D1
+};
+
+// Calling a Hidden Virtual through the Base class
+// given the classes above, let's look at several different ways to call these functions
+// see 5
+
+//Overriding Overloaded functions
+// A derived class can override zero or more instances of the overloaded functions it inherits
+// sometimes a class needs to override some of the functions in an overloaded set. It would be tedious to override
+// every base-class version
+// Thus, a derived class can provide a using declaration for the overloaded member
 int main() {
     // 1
     Bulk_quote bulk;
@@ -88,4 +133,36 @@ int main() {
     // were we write
     Derived3 d(42);
     cout << d.get_mem() < , endl;    // prints 42
+
+    // 4
+    Derived5 d5;
+    Base4 b4;
+    b4.memfcn();    // calls Base4::memfcn
+    d5.memfcn(10);  // calls Derived5::memfcn
+    d5.memfcn();    // error: memfcn with no arguments is hidden
+    d5.Base4::memfcn(); // ok: calls Base4::memfcn
+
+    // 5
+    Base5 bobj;
+    D1 d1obj;
+    D2 d2obj;
+    Base5 *bp1 = &bobj, *bp2 = &d1obj, *bp3 = &d2obj;
+    bp1->fcn(); // virtual call: Base5::fcn
+    bp2->fcn(); // virtual call: Base5::fcn
+    bp3->fcn(); // virtual call: D2::fcn
+    D1 *d1p = &d1obj;
+    D2 *d2p = &d2obj;
+    bp2->f2();  // error: Base5 has no member named f2
+    d1p->f2();  // virtual call: D1::f2
+    d2p->f2();  // virtual call: D2::f2
+    // The first three call, Because fcn is virtual, the compiler generates code to decide at run time which version to call.
+    // let's look at non-virtual call
+    Base5 *p1 = &d2obj;
+    D1 *p2 = &d2obj;
+    D2 *p3 = &d2obj;
+    p1->fcn(42);    // error: has no version of fcn that takes an int
+    p2->fcn(42);    // statically bound, calls D1::fcn(int)
+    p3->fcn(42);    // statically bound, calls D2::fcn(int)
+
+
 }
