@@ -8,6 +8,7 @@
 #include "memory"
 #include "set"
 
+
 using namespace std;
 
 // Containers and Inheritance
@@ -30,6 +31,7 @@ public:
     void add_item(const shared_ptr<Quote> &sale) {
         items.insert(sale);
     }
+
     double total_receipt(ostream &os) const;
 
 private:
@@ -46,13 +48,87 @@ private:
 };
 
 // Defining the members of Basket
+double print_total(ostream &os, const Quote &item, size_t n) {
+    // depending on the type of the object bound to the item parameter
+    // calls either Quote::net_price or Bulk_Quote::net_price
+    double ret = item.net_price(n);
+    os << "ISBN: " << item.isbn()   // calls Quote::isbn
+       << " # sold: " << n << " total due: " << ret << endl;
+    return ret;
+}
+
 // The second member, total_receipt, prints an itemized bill for the contents of the basket and returns the price for
 // all the items in the basket.
-double Basket::total_receipt(ostream &os) const{
-    double sum=0.0; // holds the running total
+double Basket::total_receipt(ostream &os) const {
+    double sum = 0.0; // holds the running total
     // iter refers to the first element in a batch of elements with the same ISBN
-
+    // upp_bound returns an iterator to the element just past the end of that patch
+    for (auto iter = items.cbegin(); iter != items.cend(); iter = items.upper_bound(*iter)) {
+        // we know there is at least one element with this key in the Basket
+        // print the line item for this book
+        sum += print_total(os, **iter, items.count(*iter));
+    }
+    os << "Total Sale: " << sum << endl; // print the final overall total
+    return sum;
 }
+
+// Hiding the Pointers
+// Users of Basket still have to deal with dynamic memory, because add_item takes a shared_ptr.
+// As a result, users have to write code such as in example 3:
+// next, we redefine add_item so that it takes a Quote object instead of shared_ptr.
+// define two versions, one that will copy its given object and the other that will move from it
+void add_item(const Quote &sale);   // copy the given object
+void add_item(Quote &&sale);    // move the given object
+// The only problem is that add_item doesn't know what type to allocate. if with     new Quote(sale)
+// since sale may be Quote or Bulk_Quote, this will only copies the Quote part of sale.
+
+// Simulating virtual copy
+// we'll solve above problem by giving our Quote class a virtual member that allocates a copy of itself
+class Quote3 {
+public:
+    // virtual function to return a dynamically allocated copy of itself
+    // these members use reference qualifiers:
+    virtual Quote3 *clone() const &{ return new Quote3(*this); }
+
+    virtual Quote3 *clone() &&{ return new Quote3(std::move(*this)); }
+    // other members as before
+
+    string isbn() const { return bookNo; }
+
+    virtual double net_price(size_t n) const { return price * n; }
+
+    virtual ~Quote3() = default; // dynamic binding for the destructor
+private:
+    std::string bookNo; // ISBN number
+protected:
+    double price = 0.0;   // normal, undiscounted price
+};
+
+class Bulk_quote3 : public Quote3 {
+    Bulk_quote3 *clone() const &{ return new Bulk_quote3(*this); }
+
+    Bulk_quote3 *clone() &&{ return new Bulk_quote3(std::move(*this)); }
+    // other
+};
+
+// Using clone, it is easy to write our new versions of add_item:
+class Basket2 {
+public:
+    void add_item(const Quote3 &sale)   // copy the given object
+    { items.insert(shared_ptr<Quote3>(sale.clone())); }
+
+    void add_item(Quote3 &&sale)  // move the given object
+    { items.insert(shared_ptr<Quote3>(std::move(sale).clone())); }
+
+    double total_receipt(ostream &os) const;
+
+private:
+    static bool compare(const shared_ptr<Quote3> &lhs, const shared_ptr<Quote3> &rhs) {
+        return lhs->isbn() < rhs->isbn();
+    }
+
+    multiset<shared_ptr<Quote3>, decltype(compare) *> items{compare};
+};
 
 int main() {
     // example 1
@@ -70,6 +146,11 @@ int main() {
     basket2.push_back(make_shared<Bulk_quote>("1", 50, 10, .25));
     // calls version defined by Bulk_Quote, prints 562.5. i.e 15 *50 less the discount
     cout << basket2.back()->net_price(15) << endl;
+
+    // example 3
+    Basket bsk;
+    bsk.add_item(make_shared<Quote>("1", 45));
+    bsk.add_item(make_shared<Bulk_quote>("2", 30, 10, .24));
 
 
 }
