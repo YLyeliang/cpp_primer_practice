@@ -33,6 +33,15 @@
 // (line 2) Her Daddy says when the wind blows
 
 // 159.1 An object-oriented solution
+// WordQuery // Daddy
+// NotQuery // ~Alice
+// OrQuery  // hair | Alice
+// AndQuery // hair & Alice
+// These classes will have only two operations:
+// eval, which takes a TextQuery object and returns a QueryResult.
+// rep, which returns the string representation of the underlying query.
+
+// Abstract Base class: see 159.h
 
 
 
