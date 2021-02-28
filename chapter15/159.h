@@ -8,6 +8,8 @@
 #include "string"
 #include "iostream"
 #include "memory"
+#include "algorithm"
+#include "../chapter12/chapter123.h"
 
 using namespace std;
 // Abstract base class
@@ -131,7 +133,7 @@ protected:
             lhs(l), rhs(r), opSym(s) {}
 
     // abstract class: BinaryQuery doesn't define eval
-    string rep() const { return "(" + lhr.rep() + " " + opSym + " " + rhs.rep() + ")"; }
+    string rep() const { return "(" + lhs.rep() + " " + opSym + " " + rhs.rep() + ")"; }
 
     Query lhs, rhs;
     string opSym;   // name of the operator
@@ -140,6 +142,85 @@ protected:
 // BinaryQuery type.
 
 // The AndQuery and OrQuery Classes and Associated Operators
+class AndQuery : public BinaryQuery {
+    friend Query operator&(const Query &, const Query &);
+
+    AndQuery(const Query &left, const Query &right) : BinaryQuery(left, right, "&") {}
+
+    // concrete class: AndQuery inherits rep and defines the remaining pure virtual
+    QueryResult eval(const TextQuery &) const;
+};
+
+inline Query operator&(const Query &lhs, const Query &rhs) {
+    return shared_ptr<Query_base>(new AndQuery(lhs, rhs));
+}
+
+class OrQuery : public BinaryQuery {
+    friend Query operator|(const Query &, const Query &);
+
+    OrQuery(const Query &left, const Query &right) : BinaryQuery(left, right, "|") {}
+
+    // concrete class: OrQuery inherits rep and defines the remaining pure virtual
+    QueryResult eval(const TextQuery &) const;
+};
+
+inline Query operator|(const Query &lhs, const Query &rhs) {
+    return shared_ptr<Query_base>(new OrQuery(lhs, rhs))
+}
+
+// 159.4 The eval functions
+// we use the QueryResult from 12.3.
+
+// OrQuery::eval
+QueryResult OrQuery::eval(const TextQuery &text) const {
+    // virtual calls through the Query members, lhs and rhs
+    // the calls to eval return the QueryResult for each operand
+    auto right = rhs.eval(text), left = lhs.eval(text);
+    // copy the line numbers from the QueryResult for each operand
+    auto ret_lines = make_shared<set<line_no>>(left.begin(), lef.end());
+    // insets lines from the right-hand operand
+    ret_lines->insert(right.begin(), right.end());
+
+    // return the new QueryResult representing the union of lhs and rhs
+    return QueryResult(rep(), ret_lines, left.get_file());
+}
+
+// AndQuery::eval
+// returns the intersection of its operands' result sets
+QueryResult AndQuery::eval(const TextQuery &text) const {
+    // virtual calls through the Query operands to get result sets for the operands
+    auto left = lhs.eval(text), right = rhs.eval(text);
+    // set to hold the intersection of left and right
+    auto ret_lines = make_shared<set<line_no>>();
+    // writes the intersection of two ranges to a destination iterator
+    // destination iterator in this call adds elements to ret
+    set_intersection(left.begin(), left.end(), right.begin(), right.end(), inserter(*ret_lines, ret_lines->begin()));
+    return QueryResult(rep(), ret_lines, left.get_file());
+}
+
+// NotQuery::eval
+// returns the lines not in its operand's result set
+QueryResult NotQuery::eval(const TextQuery &text) const {
+    // virtual call to eval through the Query operand
+    auto result = query.eval(text);
+    // start out with an empty result set
+    auto ret_lines = make_shared<set<line_no>>();
+    // we have to iterate through the lines on which our operand appears
+    auto beg = result.begin(), end = result.end();
+    // for each line in the input file, if that line is not in result,
+    // add that line number to ret_lines
+    auto sz = result.get_file()->size();
+    for (size_t n = 0; n != sz; ++n) {
+        // if we haven't processed all the lines in result
+        // check whether this line is present
+        if (beg == end || *beg != n)
+            ret_lines->insert(n);   // if not in result, add this line
+        else if (beg != end)
+            ++beg;  // otherwise get the next line number in result if there is one
+    }
+    return QueryResult(rep(), ret_lines, result.get_file());
+}
+
 
 
 #endif //NOW_CODE_159_H
