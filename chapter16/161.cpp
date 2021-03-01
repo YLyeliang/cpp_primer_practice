@@ -1,9 +1,10 @@
 //
 // Created by yel on 2021/2/28.
 //
-#include <vector>
+#include<vector>
 #include "string"
 #include "iostream"
+#include "memory"
 
 using namespace std;
 // Defining a Template
@@ -65,12 +66,128 @@ inline T min(const T &, const T &);
 // writing Type-independent code
 // The compare function illustrates two important principles for writing generic code
 // 1. The function parameters in template are reference to const
-// 2. The tests in the body use only < comparisons
+// 2. The tests in the body use only < comparisons, which may reduce the requirements of supported operations.
+// Definitions of function templates and member functions of class templates are ordinarily put into header files.
+
+// Compilation Errors are mostly reported during Instantiation
+// consider the code below:
+// Sales_data data1,data2;
+// compare(data1,data2)
+// it would be an error, since Sales_data have no < operator.
+// This error cannot be detected until the compiler instantiates the definition of compare on type Sales_data
+
+// 161.2 Class Template
+// the compiler cannot deduce the template parameter type(s) for a class template.
+
+// Defining a class template
+// As an example, we'll implement a template version of StrBlob in chapter 12.1
+template<typename T>
+class Blob {
+public:
+    typedef T value_type;
+    typedef typename vector<T>::size_type size_type;
+
+    // constructors
+    Blob();
+
+    Blob(initializer_list<T> il);
+
+    // number of elements in the Blob
+    size_type size() const { return data->size; }
+
+    bool empty() const { return data->empty(); }
+
+    // add and remove elements
+    void push_back(const T &t) { data->push_back(t); }
+
+    // move version , see 136.3
+    void push_back(T &&t) { data->push_back(std::move(t)); }
+
+    void pop_back();
+
+    // element access
+    T &back();
+
+    T &operator[](size_type i); // defined in 145
+private:
+    shared_ptr<vector<T>> data;
+
+    // throws msg if data[i] isn't valid
+    void check(size_type i, const string &msg) const;
+};
+
+// Instantiate a class template
+// when we use a class template, we must supply extra information. It's a list of explicit template arguments
+// that are bound to the template's parameters.
+// see example 3, it's equivalent to
+template<>
+class Blob<int> {
+    typedef typename vector<int>::size_type size_type;
+
+    Blob();
+
+    Blob(initializer_list<int> il);
+
+    // ...
+    int &operator[](size_type i);
+
+private:
+    shared_ptr<vector<int>> data;
+
+    void check(size_type i, const string &msg) const;
+};
+
+// Reference to a template type in the scope of the template
+
+// Member functions of class templates
+// when we define a member, the template arguments are the same as the template parameters.
+// example
+//ret-type StrBlob:member-name(parm_list)
+// the corresponding Blob member will look like
+//template<typename T>
+//ret-type Blob<T>::member-name(parm_list)
+
+// The check and Element Access Members
+template<typename T>
+void Blob<T>::check(size_type i, const string &msg) {
+    if (i >= data->size())
+        throw out_of_range(msg);
+}
+
+template<typename T>
+T &Blob<T>::back() {
+    check(0, "back on empty Blob");
+    return data->back();
+}
+
+template<typename T>
+T &Blob<T>::operator[](size_type i) {
+    // if i is too big, check will throw, preventing access to a nonexistent element
+    check(i, "subscript out of range");
+    return (*data)[i];
+}
+
+template<typename T>
+void Blob<T>::pop_back() {
+    check(0, "pop_back on empty Blob");
+    data->pop_back();
+}
+
+// Blob Constructors
+template<typename T>
+Blob<T>::Blob():data(make_shared<vector<T>>()) {}
+
+template<typename T>
+Blob<T>::Blob(initializer_list<T> il):data(make_shared<vector<T>>(il)) {}
+// To use this constructor, we must pass an initializer_list in which the elements are compatible with the element type
+// of the Blob
+// see example 4
+// If a member function is not used, it is not instantiated.
 
 
-
-
-
+// Instantiation of class-template member functions
+// By default, a member function of a class template is instantiated only if the program uses that member function.
+// see example 5
 int main() {
     // example 1
     cout << compare(1, 0) << endl;   // T is int
@@ -80,6 +197,24 @@ int main() {
     // example 2
     compare2("hi", "mom");
     // will use the size of the literals to instantiate. Which will instantiate int compare(const char (&p1)[3], const char (&p2)[4])
+
+    // example 3: Instantiate a class template
+    Blob<int> ia;   // empty Blob<int>
+    Blob<int> ia2 = {0, 1, 2, 3, 4};    // Blob<int> with five elements
+    // the compiler generates a different class for each element type we specify:
+    Blob<string> names;
+    Blob<double> prices;
+
+    // example 4
+    Blob<string> articles = {"a", "b", "c"};
+
+    // example 5
+    // Instantiate Blob<int> and the initializer_list<int> constructor
+    Blob<int> squares = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // Instantiate Blob<int>::size() const
+    for (size_t i = 0; i != squares.size(); ++i)
+        squares[i] = i * i;    // Instantiate Blob<int>::operator[](size_type)
+
 
 }
 
