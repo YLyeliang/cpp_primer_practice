@@ -93,7 +93,7 @@ public:
     Blob(initializer_list<T> il);
 
     // number of elements in the Blob
-    size_type size() const { return data->size; }
+    size_type size() const { return data->size(); }
 
     bool empty() const { return data->empty(); }
 
@@ -120,22 +120,22 @@ private:
 // when we use a class template, we must supply extra information. It's a list of explicit template arguments
 // that are bound to the template's parameters.
 // see example 3, it's equivalent to
-template<>
-class Blob<int> {
-    typedef typename vector<int>::size_type size_type;
-
-    Blob();
-
-    Blob(initializer_list<int> il);
-
-    // ...
-    int &operator[](size_type i);
-
-private:
-    shared_ptr<vector<int>> data;
-
-    void check(size_type i, const string &msg) const;
-};
+//template<>
+//class Blob<int> {
+//    typedef typename vector<int>::size_type size_type;
+//
+//    Blob();
+//
+//    Blob(initializer_list<int> il);
+//
+//    // ...
+//    int &operator[](size_type i);
+//
+//private:
+//    shared_ptr<vector<int>> data;
+//
+//    void check(size_type i, const string &msg) const;
+//};
 
 // Reference to a template type in the scope of the template
 
@@ -149,7 +149,7 @@ private:
 
 // The check and Element Access Members
 template<typename T>
-void Blob<T>::check(size_type i, const string &msg) {
+void Blob<T>::check(size_type i, const string &msg) const {
     if (i >= data->size())
         throw out_of_range(msg);
 }
@@ -188,6 +188,94 @@ Blob<T>::Blob(initializer_list<T> il):data(make_shared<vector<T>>(il)) {}
 // Instantiation of class-template member functions
 // By default, a member function of a class template is instantiated only if the program uses that member function.
 // see example 5
+
+// Simplifying Use of a Template class inside class code
+// There's one exception that we must supply template arguments when we use a class template type
+// BlobPtr throws an exception on attempts to access a nonexistent element
+template<typename T>
+class BlobPtr {
+public:
+    BlobPtr() : curr(0) {}
+
+    BlobPtr(Blob<T> &a, size_t sz = 0) : wptr(a.data), curr(sz) {}
+
+    T &operator*() const {
+        auto p = check(curr, "dereference past end");
+        return (*p)[curr];  // (*p) is the vector to which this object points
+    }
+
+    // increment and decrement
+    BlobPtr &operator++();  // prefix operators
+    BlobPtr &operator--();
+
+    BlobPtr operator++(int);
+
+private:
+    // check returns a shared_ptr to the vector if the check succeeds
+    shared_ptr<vector<T>> check(size_t, const string &) const;
+
+    // store a weak_ptr, which means the underlying vector might be destroyed
+    weak_ptr<vector<T>> wptr;
+    size_t curr;    // current position within the array
+};
+// We used BlobPtr&, not BlobPtr<T>&. Inside the scope of a class template, the compiler treats the reference to
+// the template itself as if we supplied template arguments matching the template's parameters.
+
+// Using a Class Template Name outside the Class Template Body
+// Since outside the scope of the class, we must specify that the return type returns a BlobPtr instantiated with the same type sa the class
+// postfix: increment/decrement the object but return the unchanged value
+template<typename T>
+BlobPtr<T> BlobPtr<T>::operator++(int) {
+    // no check needed here; the call to prefix increment will do the check
+    BlobPtr ret = *this;    // save the current value
+    ++*this;    // advance one element; prefix++ checks the increment
+    return ret; // return the saved state
+}
+
+// Class Templates and friends
+
+// One-to-one friendship
+// forward declarations needed for friend declarations in Blob
+// see 161.h
+
+// General and Specific Template Friendship
+// a class can also make every instantiation of another template its friend, or it may limit friendship to a specific
+// instantiation:
+// forward declaration necessary to befriend a specific instantiation of a template
+template<typename T>
+class Pal;
+
+class C {
+    friend class Pal<C>;    // Pal instantiated with class C is a friend to C
+    // all instances of Pal2 are friend to C;
+    // no forward declaration required when we befriend all instantiations
+    template<typename T> friend
+    class Pal2;
+
+};
+
+template<typename T>
+class C2 {
+    // each instantiation of C2 has the same instance of Pal as friend
+    friend class Pal<T>;    // a template declaration for Pal must be in scope
+    // all instances of Pal2 are friends of each instance of C2, prior declaration needed
+    template<typename X> friend
+    class Pal2;
+
+    // Pal3 is a nontemplate class that is a friend of every instance of C2
+    friend class Pal3;  // prior declaration for Pal3 not needed
+};
+
+// Befriending the template's own type parameter
+// under the new stand, we can make a template type parameter a friend
+template<typename Type>
+class Bar {
+    friend Type;    // grants access to the type used to instantiate Bar
+};
+
+// Template Type Aliases
+
+
 int main() {
     // example 1
     cout << compare(1, 0) << endl;   // T is int
