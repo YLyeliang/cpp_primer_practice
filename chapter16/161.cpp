@@ -274,6 +274,114 @@ class Bar {
 };
 
 // Template Type Aliases
+// we can define typedef that refers to a instantiated class
+typedef Blob<string> StrBlob;
+// However, since template is not a type, we can't define typedef Blob<T>
+// Instead, we use using keyword
+template<typename T> using twin = pair<T, T>;
+twin<string> author;
+// When we define a template type alias, we can fix one or more of the template parameters
+template<typename T> using partNo = pair<T, unsigned>;
+partNo<string> books;   // book is a pair<string,unsigned>
+
+// static members of class template
+template<typename T>
+class Foo {
+public:
+    static size_t count() { return ctr; }
+
+private:
+    static size_t ctr;
+};
+
+// instantiates static members Foo<string>::ctr and Foo<string>::count
+Foo<string> fs;
+// all three objects share the same Foo<int>::ctr and Foo<int>::count members
+Foo<int> fi, fi2, fi3;
+template<typename T>
+size_t Foo<T>::ctr = 0;   // define and initialize ctr
+// example 6
+
+// 161.3 Template parameters
+// a template parameter name has no intrinsic meaning, normally it's T, but we can use any other name.
+
+// Template parameters and scope
+// The name of a template parameter name can be used after it has been declared and until the end of the template declaration
+// or definition.
+typedef double A;
+
+template<typename A, typename B>
+void f(A a, B b) {
+    A tmp = a;    // tmp has same type as template parameter A, not double
+    double B;   // error: redeclares template parameter B
+}
+
+// Because a parameter name cannot be reused, the name of a template parameter can appear only once
+// error: illegal reuse of template parameter name V
+template<typename V, typename V>
+void ff() {}
+// ...
+
+// Template Declarations
+// a template declaration must include the template parameters
+// declares but doesn't define compare and Blob
+template<typename T>
+int compare(const T &, const T &);
+
+template<typename T>
+class Blob;
+
+// all three uses of calc refers to the same function template
+template<typename T>
+T calc(const T &, const T &);   // declaration
+template<typename U>
+U calc(const U &, const U &);   // declaration
+// definition of the template
+template<typename Type>
+Type calc(const Type &a, Type &b) {/**/}
+
+// Using class members that are types
+// Assuming T is a name of a type parameter, when the compiler see a statement of the following form:
+// T::size_type * p
+// it needs to know whether we're defining a variable named p or are multiplying a static data member named size_type by
+// a variable named p
+// we must explicitly tell the compiler a type member of a template type is a type. By using typename
+template<typename T>
+typename T::value_type top(const T &c) {
+    if (!c.empty())
+        return c.back();
+    else
+        return typename T::value_type();
+}
+// top expects a container as its argument and use a typename to specify its return type and to generate a value initialized
+// element to return if c has no elements
+
+// Default Template Arguments
+// rewrite compare to use the library less function-object template by default:
+// compare has a default template argument, less<T>
+// and a default function argument, F()
+template<typename T, typename F=less<T>>
+int compare2(const T &v1, const T &v2, F f = F()) {
+    if (f(v1, v2)) return -1;
+    if (f(v2, v1)) return 1;
+    return 0;
+}
+// when users call this version of compare, they may supply their own comparison operation but are not required to do so.
+// see example 7
+
+// template default arguments and class templates
+template<class T =int>
+class Numbers {  // by default T is int
+public:
+    Numbers(T v = 0) : val(v) {}
+
+private:
+    T val;
+
+};
+// instantiation see example 8
+
+// 161.4 Member Templates
 
 
 int main() {
@@ -303,6 +411,21 @@ int main() {
     for (size_t i = 0; i != squares.size(); ++i)
         squares[i] = i * i;    // Instantiate Blob<int>::operator[](size_type)
 
+    // example 6
+    Foo<int> f1;    // instantiate Foo<int> class and the static data member ctr
+    auto ct = Foo<int>::count();    // instantiate Foo<int>::count
+    ct = f1.count();    // uses Foo<int>::count
+    ct = Foo::count();   // error: which template instantiation?
+
+    // example 7
+    bool i = compare2(0, 42);    // use less; i is -1
+    // result depends on the isbns in item1 and item2
+    Sales_data item1(cin), item2(cin);
+    bool j = compare2(item1, item2, compareIsbn);
+
+    // example 8
+    Numbers<long double> lots_of_precision;
+    Numbers<> average_precision;    // empty <> says we want the default type
 
 }
 
