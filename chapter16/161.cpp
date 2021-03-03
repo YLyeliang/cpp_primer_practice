@@ -5,6 +5,7 @@
 #include "string"
 #include "iostream"
 #include "memory"
+#include "list"
 
 using namespace std;
 // Defining a Template
@@ -382,6 +383,84 @@ private:
 // instantiation see example 8
 
 // 161.4 Member Templates
+// A class, may have a member function that is itself a template, such members are referred to as member templates,
+// and may not be virtual
+// function-object class that calls delete on a given pointer
+class DebugDelete {
+public:
+    DebugDelete(ostream &s = cerr) : os(s) {}
+
+    // as with any function template, the type of T is deduced by the compiler
+    template<typename T>
+    void operator()(T *p) const {
+        os << " deleting unique_ptr" << endl;
+        delete p;
+    }
+
+private:
+    ostream &os;
+};
+// see example 9
+
+// Member template of class template
+// we'll give our Blob class a constructor that will take two iterators denoting a range of elements to copy.
+// since we'd like to support iterators into varying kinds of sequences, we'll make this constructor a template
+template<typename T>
+class Blob2 {
+public:
+    template<typename It>
+    Blob2(It b, It e);
+
+private:
+    shared_ptr<vector<T>> data;
+};
+
+// When we define a member template outside the body of a class template, we must provide the template parameter list
+// for the class template and for the function template
+// type parameter for the class
+template<typename T>
+// type parameter for the constructor
+template<typename It>
+Blob2<T>::Blob2(It b, It e) :data(make_shared<vector<T>>(b, e)) {}
+
+// Instantiation and Member Templates
+// see example 10
+
+// 161.5 Controlling Instantiations
+// When two or more separately compiled source files use the same template with the same template arguments, there is an
+// instantiation of that template in each of those files.
+// In large system, the overhead of instantiating the same template in multiple files can become significant.
+// we can avoid this overhead through an explicit instantiation:
+// extern template declaration;    // instantiation declaration
+// template declaration;   // instantiation definition
+extern template
+class Blob<string>;   // declaration
+template int compare(const int &, const int &);   // definition
+// when the compiler sees an extern template declaration, it will note generate code for that instantiation in that file,
+// declaring an instantiation as extern is a promise that there will be a non-extern use of that instantiation elsewhere.
+
+// instantiation file must provide a (non-extern) definition for every
+// type and function that other files declare as extern
+template
+class Blob<string>;    // instantiates all members of the class template
+// see example in 1615.cpp, the compare<int> and Blob<string> will not be instantiated in that file
+// the definitions for compare instantiated with int and Blob<string> will contained in this file.
+// when we build the application, we must link both files.
+
+// Instantiation definitions instantiates all members
+// an instantiation definition can be used only for types that can be used with every member function of a class template.
+
+// 161.6 Efficiency and flexibility
+// The library smart pointer types offer a good illustration of design choices faced by designers of templates
+// The difference between shared_ptr and unique_ptr is the strategy they use in managing the pointer they hold
+// we can easily override the deleter of a shared_ptr by passing a callable object when we create or reset the pointer.
+// In contrast, the type of the deleter is part of the type of a unique_ptr object
+
+// Binding the Deleter at runtime
+// we can infer that shared_ptr must access its deleter indirectly
+
+// Binding the deleter at compiler time
+// in the unique_ptr, the type of the deleter is part of the type of the unique_ptr
 
 
 int main() {
@@ -426,6 +505,35 @@ int main() {
     // example 8
     Numbers<long double> lots_of_precision;
     Numbers<> average_precision;    // empty <> says we want the default type
+
+    // example 9
+    double *p = new double;
+    DebugDelete d;  // an object act like a delete expression
+    d(p);   // calls DebugDelete::operator()(double *), which delete p
+    int *ip = new int;
+    // calls operator()(int*) on a temporary DebugDelete object
+    DebugDelete()(ip);
+    // we can use DebugDelete as the deleter of a unique_ptr. To override the deleter of a unique_ptr, we supply the
+    // type of the deleter inside the brackets and supply an object of the deleter type to the constructor.
+    // destroying the object to which p points
+    // instantiates DebugDelete::operator()<int>(int*)
+    unique_ptr<int, DebugDelete> p(new int, DebugDelete());
+    // destroying the object to which sp points
+    // instantiates DebugDelete::operator()<string>(string*)
+    unique_ptr<string, DebugDelete> sp(new string, DebugDelete());
+
+    // example 10
+    int ia3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    vector<long> vi = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    list<const char *> w = {"now", "is", "the", "time"};
+    // instantiate the Blob<int> class
+    // and the Blob<int> constructor that has two int* parameters
+    Blob2<int> a1(begin(ia3), end(ia3));
+    // instantiate the Blob<int> constructor that has two vector<long>::iterator parameters
+    Blob2<int> a2(vi.begin(), vi.end());
+    // instantiate the Blob<string> class and the Blob<string> constructor that has two list<const char*>::iterator parameters
+    Blob2<string> a3(w.begin(), w.end());
+
 
 }
 
