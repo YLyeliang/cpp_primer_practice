@@ -4,8 +4,10 @@
 #include "string"
 #include "memory"
 #include "iostream"
+#include "vector"
 #include "./162.h"
 #include "fstream"
+
 
 using namespace std;
 
@@ -41,9 +43,36 @@ int main() {
     auto val5 = alternative_sum<long long, int, long>(i, lng);
 
     // example 4
-    compare(lng,1024); // error: don't match
-    compare<long>(lng,1024);    // ok: compare(long,long)
-    compare<int>(lng,1024); // ok: compare(int,int)
+    compare(lng, 1024); // error: don't match
+    compare<long>(lng, 1024);    // ok: compare(long,long)
+    compare<int>(lng, 1024); // ok: compare(int,int)
+
+    // example 5
+    vector<int> vi = {1, 2, 3, 4, 5};
+    Blob <string> ca = {"hi", "bye"};
+    auto &ii = fcn(vi.begin(), vi.end()); // fcn should return int&
+    auto &s = fcn(ca.begin(), ca.end());    // fcn should return string&
+
+    // example 6
+    func(compare);  // error: which instantiation of compare
+    // we can disambiguate the call to func by using explicit template arguments:
+    func(compare<int>);
+
+    // example 7
+    f1(i);  // template parameter T is int
+    const int ci = 0;
+    f1(ci); // ci is a const int; T is const int
+    f1(5);  // error: argument to a & must be an lvalue
+
+    // parameter in f2 is const &, const in the argument is irrelevant
+    // in each of these three calls, f2's function parameter is inferred as const int &
+    f2(i);  // T is int
+    f2(ci); // ci is an const int; but T is int
+    f2(5);  // a const & can be bound to a rvalue, T is int
+
+    f3(42); // argument is an rvalue of type; template parameter T is int
+
+
 
 }
 

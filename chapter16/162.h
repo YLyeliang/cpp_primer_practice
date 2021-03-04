@@ -69,4 +69,65 @@ T3 alternative_sum(T2, T1);
 // Normal conversions apply for explicitly specified arguments
 // see example 4
 
+// 162.3 Trailing return types and type transformation
+// requiring an explicit template argument imposes a burden on the user with no compensating advantages.
+// for example, a function that takes a pair of iterator, return a reference to an element in the sequence
+template<typename It>
+auto fcn(It beg, It end) -> decltype(*beg) {
+    // process the range
+
+    return *beg;    // return a reference to an element from the range
+}
+// instantiation see example 5
+// we don't know the exact type we want to return, but we do know that type to be a reference
+// we can use decltype(*beg) to obtain the type of that expression.
+// To define this function, we must use a trailing return type, see above
+
+// The type transformation library template classes
+// sometimes we don't have direct access to the type that we need.
+// for example, a similar function to fcn that return an element by value, rather than reference to an element
+// to obtain the element type, we can use type transformation template, which defined in type_traits header
+// In this case, remove_reference are used to obtain the element type.
+template<typename It>
+auto func2(It beg, It end) -> typename remove_reference<decltype(*beg)>::type {
+    // process the range
+    return *beg;    // return a copy of an element from the range
+}
+// Note: type is member of a class that depends on a template parameter.
+// As a result, we must use typename in the declaration of the return type to tell the compiler that type represents a type
+
+// 162.4 Function Pointers and argument deduction
+// pf1 points to the instantiation int compare(int&,int&)
+int (*pf1)(const int &, const int &) = compare;
+
+// It's an error if the template arguments cannot be determined from the function pointer type
+// overloaded versions of func; each takes a different function pointer type
+void func(int(*)(const string &, const string &));
+
+void func(int(*)(const int &, const int &));
+// see example 6
+
+// 162.5 Template argument deduction and references
+// In order to understand type deduction from a call to function such as
+template<typename T>
+void f(T &p);
+// p is a reference to a template type parameter T, two points: Normal reference binding rules apply; const are low level
+
+// type deduction from lvalue references function parameters
+template<typename T>
+void f1(T &);    // argument must be an lvalue
+// calls to f1 use the referred-to type of the argument as the template parameter type, see example 7
+
+template<typename T>
+void f2(const T &);  // can take an rvalue, still see example 7
+
+// type deduction from rvalue reference function parameters
+template<typename T>
+void f3(T &&);
+// still see example 7
+
+// Reference collapsing and rvalue reference parameters
+
+
+
 #endif //NOW_CODE_162_H
