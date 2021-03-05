@@ -127,6 +127,12 @@ void f3(T &&);
 // still see example 7
 
 // Reference collapsing and rvalue reference parameters
+// for a given type X:
+// X& &, X& &&, and X&& & all collapse to type X&
+// The type X&& && collapse to X& &
+// Reference collapse applies only when a reference to a reference is created indirectly, such as in a type alias
+// or a template parameter
+
 
 
 
