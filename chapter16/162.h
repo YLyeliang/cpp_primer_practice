@@ -132,6 +132,7 @@ void f3(T &&);
 // The type X&& && collapse to X& &
 // Reference collapse applies only when a reference to a reference is created indirectly, such as in a type alias
 // or a template parameter
+// see example 8
 
 
 

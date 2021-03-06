@@ -72,6 +72,16 @@ int main() {
 
     f3(42); // argument is an rvalue of type; template parameter T is int
 
+    // example 8
+    f3(i);  // argument is an lvalue; template parameter T is int&
+    f3(ci); // ... const int &
+    // when a template parameter T is deduced as a reference type, the collapsing rule says that the function parameter
+    // T&& collapses to an lvalue reference type
+    // The f3(i) would be something like:
+    // void f3<int &>(int &T &&);   // When T is int&, function parameter is int& &&
+    // Thus, even though the form of the function type in f3 is a rvalue reference, this call instantiates f3 with an
+    // lvalue reference type:
+    void f3<int &>(int &);    // when T is int&, function parameter collapses to int&
 
 
 }
