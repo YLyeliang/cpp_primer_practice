@@ -34,7 +34,7 @@ int main() {
 
     // example 3
     long lng;
-    int i;
+    int i=1;
     auto val3 = sum<long long>(i, lng); // long long sum(int, long)
 
     // error: can't infer initial template parameters
@@ -82,6 +82,23 @@ int main() {
     // Thus, even though the form of the function type in f3 is a rvalue reference, this call instantiates f3 with an
     // lvalue reference type:
     void f3<int &>(int &);    // when T is int&, function parameter collapses to int&
+
+    // example 9
+    // we can pass either an lvalue or rvalue to move
+    string ss1("hi!"), ss2;
+    ss2 = std::move(string("bye!")); // ok: moving from an rvalue
+    ss2 = std::move(ss1);    // ok: but after the assignment ss1 has indeterminate value
+
+    // example 10
+    // f changes the value of the argument bound to v2. However, we call f through flip1, the changes made by f
+    // do not affect the original argument:
+    int &j = i;
+    ff(42, j);   // f changes its argument j
+    flip1(ff, j, 42);  // f called through flip1 leaves j unchanged
+    // that is j passed to the t1, and it's a int not int&.
+    // it's exactly: void flip1(void(*ff)(int,int),int t1, int2))
+
+    flip2(g, j, 42);    // error: can't initialize int&& from lvalue
 
 
 }

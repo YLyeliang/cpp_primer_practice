@@ -8,6 +8,7 @@
 #include "string"
 #include "memory"
 #include "iostream"
+#include "utility"
 
 using namespace std;
 
@@ -134,7 +135,89 @@ void f3(T &&);
 // or a template parameter
 // see example 8
 
+// Writing Template functions with rvalue reference parameters
+template<typename T>
+void f3(T &&val) {
+    T t = val;   // copy or binding a reference?
+    t = fcn(t);   // does the assignment change only t or val and t?
+    if (val == t) {} // always true if T is a reference type
+}
+// when we call f3 on a value, such as 42, T is int. local variable t has type int and is initialized by copying.
 
+// 16.2.6 understanding std::move
+// it's a good illustration of a template that uses rvalue references.
+// How std::move is defined
+template<typename T>
+typename remove_reference<T>::type &&move(T &&t) {
+    // static_cast
+    return static_cast<typename remove_reference<T>::type &&>(t);
+}
+// see example 9
 
+// How std::move works
+// from example 9, std::move(string("bye"))
+// deduced T is string;
+// remove_reference is instantiated with string;
+// type member of remove_reference<string> is string;
+// return type of move is string&&
+// move's function parameter, t, has string&&
+// accordingly, that it: string&& move(string &&t)
+
+// std::move(ss1)
+// T is string&(reference to string, not plain string)
+// remove_reference instantiated with string&
+// type member of remove_reference<string> is string
+// return type of move is string
+// t instantiates as string& &&, which collapses to string&
+// string&& move(string &t)
+
+// static_cast from an lvalue to an rvalue reference is permitted
+
+// 162.7 Forwarding
+// template that takes a callable and two parameters
+// and calls the given callable with the parameters "flipped"
+// flip1 is an incomplete implementation: top-level const and references are lost
+template<typename F, typename T1, typename T2>
+void flip1(F f, T1 t1, T2 t2) {
+    f(t2, t1);
+}
+
+// works fine until we use it to call a function has a reference param:
+void ff(int v1, int &v2) {
+    cout << v1 << " " << ++v2 << endl;
+}
+// see example 10
+
+// Defining Function parameters that retain type information
+template<typename F, typename T1, typename T2>
+void flip2(F f, T1 &&t1, T2 &&t2) {
+    f(t2, t1);
+}
+
+// if we call flip1(ff,j,42). lvalue j passed to the t1.
+// In flip2, the type deduced for T1 is int&
+// That is, an rvalue reference to a template parameter(i.e. T&&), preserves the constness and lvalue/rvalue property
+// of its corresponding argument
+// Bug flip2 cannot used to call func has rvalue reference param
+void g(int &&i, int &j) {
+    cout << i << " " << j << endl;
+}
+// still in example 10
+
+// Using std::forward to preserve type information in a call
+// like move, forward is defined in the utility header
+// forward must be called with an explicit template argument, returns an rvalue reference to that explicit argumen type.
+// forward<T> is T&&
+template<typename Type>
+void intermediary(Type &&arg) {
+    finalFcn(std::forward<Type>(arg));
+}
+
+// when used with function parameter that is T&&, forward preserves all the details about an argument's type
+// rewrite flip
+template<typename F, typename T1, typename T2>
+void flip(F f, T1 &&t1, T2 &&t2) {
+    f(std::forward<T2>(t2), std::forward<T1>(t1));
+}
 
 #endif //NOW_CODE_162_H
