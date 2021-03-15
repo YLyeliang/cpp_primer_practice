@@ -16,7 +16,7 @@ template<typename>
 class Blob; // needed for parameters in operator==
 
 template<typename T>
-bool operator==(const Blob<T> &, cosnt Blob<T> &);
+bool operator==(const Blob<T> &, const Blob<T> &);
 
 template<typename T>
 class Blob {
