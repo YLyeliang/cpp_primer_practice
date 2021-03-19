@@ -144,6 +144,27 @@ class Panda : public Bear,
 // Visibility of virtual base-class members
 
 // 183.5 Constructors and virtual inheritance
+Bear::Bear(std::string name, bool onExhibit) :
+        ZooAnimal(name, onExhibit, "Bear") {}
+
+Raccoon::Raccoon(std::string name, bool onExhibit)
+        : ZooAnimal(name, onExhibit, "Raccoon") {}
+
+Panda::Panda(std::string name, bool onExhibit)
+        : ZooAnimal(name, onExhibit, "Panda"),
+          Bear(name, onExhibit),
+          Raccoon(name, onExhibit),
+          Endangered(Endangered::critical) {}
+
+// How a Virtually Inherited Object Is Constructed
+// For example, when a Panda object is created:
+//• The (virtual base class) ZooAnimal part is constructed first, using the
+// initializers specified in the Panda constructor initializer list.
+//• The Bear part is constructed next.
+//• The Raccoon part is constructed next.
+//• The third direct base, Endangered, is constructed next.
+//• Finally, the Panda part is constructed
+
 
 
 #endif //NOW_CODE_183_H
