@@ -84,4 +84,3 @@ int main() {
          << typeid(std::string).name() << ", "
          << typeid(p).name() << ", "
          << typeid(*p).name() << endl;
-}
